@@ -96,7 +96,7 @@ def fit_power_law_odr(log_xs, log_ys, unit_exp=False):
     return exponent, prefactor, r
 
 
-def bootstrap_power_law_odr(xs, ys, xs_std=None, ys_std=None, fraction=0.9, rounds=1000):
+def bootstrap_power_law_odr(xs, ys, fraction=0.9, rounds=1000):
     """Generate a distribution of slopes and exponents.
 
     Uses subsampling and orthogonal distance regression to bootstrap a confidence interval.
@@ -105,28 +105,24 @@ def bootstrap_power_law_odr(xs, ys, xs_std=None, ys_std=None, fraction=0.9, roun
     Args:
         xs: x values in linear scale (not log)
         ys: y values in linear scale (not log)
-        xs_std: std deviation in x
-        ys_std: std deviation in y
         fraction: fraction of values to subsample in each round.
         rounds: number of rounds of bootstrapping to do. 
     """
-    tot = xs.size
-    subset_size = int(fraction * tot)
+    # get rid of NaNs
+    mask = np.isfinite(xs) & np.isfinite(ys)
+    masked_xs = np.array(xs)[mask]
+    masked_ys = np.array(ys)[mask]
 
-    has_err = xs_std is not None and ys_std is not None
+    tot = np.sum(mask)
+    subset_size = int(fraction * tot)
 
     exponents = []
     prefactors = []
     rs = []
     for _ in range(rounds):
         idxs = np.random.choice(tot, subset_size)
-
-        if has_err:
-            xs_sub = np.random.normal(xs[idxs], xs_std[idxs])
-            ys_sub = np.random.normal(ys[idxs], ys_std[idxs])
-        else:
-            xs_sub = xs[idxs]
-            ys_sub = ys[idxs]
+        xs_sub = masked_xs[idxs]
+        ys_sub = masked_ys[idxs]
 
         exp, pre, r = fit_power_law_odr(np.log(xs_sub), np.log(ys_sub))
         exponents.append(exp)
