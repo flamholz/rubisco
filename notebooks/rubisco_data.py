@@ -15,7 +15,7 @@ def load_rubisco_data():
 		raw_df, kin_df where raw is all the data and kin_df is the filtered data.
 	"""
 	# Load the data from Excel, remove data points that are not comparable.
-	fname = '../data/082418_rubisco_kinetics_merged.csv'
+	fname = '../data/DatasetS2_RubiscoKinetics_Merged.csv'
 	raw_kin_df = pd.read_csv(fname, index_col=0)
 
 	# Filtered DataFrame used for most plots below.
