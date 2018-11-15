@@ -1,5 +1,24 @@
 #!/usr/bin/python
 
+
+"""Functions associated with regression of power-law realtionships.
+
+Throughout the paper we use total least squares (TLS) regression, which
+is synonymous with orthogonal distance regression (ODR). In either case,
+we seek to minimize distance in both X and Y (i.e. the orthogonal distance
+to the fit line). This approach stems from the fact that there is no
+"independent" or "dependent" variable when we examine Rubisco kinetics.
+Rather, both variables are complicatedly interrelated by the mechanism and
+both variables are measurements with substantial error. 
+
+Here we perform linear TLS regression on log-transformed data with scipy.odr.
+It is possible to perform linear TLS regression using principal components
+analysis as well - these approaches are equivalent up to numerical error. 
+"""
+
+__author__ = 'Avi Flamholz'
+
+
 import numpy as np
 import seaborn
 
@@ -13,24 +32,45 @@ from scipy.odr import Model, Data, ODR
 
 
 def _lin_f(p, x):
-    """Basic linear regression 'model' for use with ODR"""
+    """Basic linear regression 'model' for use with ODR.
+
+    This is a function of 2 variables, slope and intercept.
+    """
     return (p[0] * x) + p[1]
 
 
 def _slope_one(p, x):
-    """Basic linear regression 'model' for use with ODR"""
+    """Basic linear regression 'model' for use with ODR.
+
+    This is a function of 1 variable. Assumes slope == 1.0.
+    """
     return x + p[0]
 
 
 def log_spearmanr(log_xs, log_ys):
+    """Convenience function to calculate spearman rank correlation.
+
+    Filters out NaNs that arise from log transform.
+    """
     mask = ~np.isnan(log_xs) & ~np.isnan(log_ys)
     xs_ = log_xs[mask]
     ys_ = log_ys[mask]
     return spearmanr(xs_, ys_)
 
 
+def log_pearsonr(log_xs, log_ys):
+    """Convenience function to calculate spearman rank correlation.
+
+    Filters out NaNs that arise from log transform.
+    """
+    mask = ~np.isnan(log_xs) & ~np.isnan(log_ys)
+    xs_ = log_xs[mask]
+    ys_ = log_ys[mask]
+    return pearsonr(xs_, ys_)
+
+
 def log_linregress(log_xs, log_ys):
-    """Linregress for logscale data - filters out NaN."""
+    """Adapts linregress for logscale data - filters out NaN."""
     mask = ~np.isnan(log_xs) & ~np.isnan(log_ys)
     xs_ = log_xs[mask]
     ys_ = log_ys[mask]
@@ -54,13 +94,14 @@ def fit_power_law(log_xs, log_ys):
 
 
 def fit_power_law_odr(log_xs, log_ys, unit_exp=False):
-    """Perform an Orthogonal Distance Regression on the given data,
-    using the same interface as the standard scipy.stats.linregress function.
+    """Perform an Orthogonal Distance Regression on log scale data.
+
     Arguments:
-    x: x data
-    y: y data
+        log_xs: x data in log scale
+        log_ys: y data in log scale
     Returns:
-    [m, c, nan, nan, nan]
+        exponent, prefactor, r
+
     Uses standard ordinary least squares to estimate the starting parameters
     then uses the scipy.odr interface to the ODRPACK Fortran code to do the
     orthogonal distance calculations.
@@ -107,6 +148,9 @@ def bootstrap_power_law_odr(xs, ys, fraction=0.9, rounds=1000):
         ys: y values in linear scale (not log)
         fraction: fraction of values to subsample in each round.
         rounds: number of rounds of bootstrapping to do. 
+
+    Returns:
+        Three numpy arrays [exponents], [prefactors], [pearson R values]
     """
     # get rid of NaNs
     mask = np.isfinite(xs) & np.isfinite(ys)
@@ -133,6 +177,7 @@ def bootstrap_power_law_odr(xs, ys, fraction=0.9, rounds=1000):
 
 
 def plot_bootstrapped_ci(xs, exponents, prefactors, ci=0.95, figure=None, color=None, plot_range=True, lw=3):
+    """TODO: remove from code - not in use."""
     # Calculate a CI on the fit from the distribution of bootstrapped values.
     ci_end = (1.0 - ci)/2.0
     conf_range = [100-100*ci_end, 100*ci_end]
@@ -158,7 +203,7 @@ def plot_bootstrapped_ci(xs, exponents, prefactors, ci=0.95, figure=None, color=
 
 
 def plot_bootstrapped_range(exponents, prefactors, figure=None):
-    """Makes a plot of the parameter distribution and the middle 95% range."""
+    """Plots distributions of exponents and prefactors and the middle 95% range."""
     pre_interval = np.percentile(prefactors, [2.5, 97.5])
     exp_interval = np.percentile(exponents, [2.5, 97.5])
     print(pre_interval)

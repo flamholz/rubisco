@@ -5,10 +5,11 @@ import numpy as np
 
 
 def load_rubisco_data():
-	"""Convencience the rubisco data.
+	"""Convencience function to load the Rubisco data.
 
-	Args:
-		fname: filename of csv to load data from.
+	Loads the merged and filtered dataset - this file should already be 
+	filtered so that it contains no measurements of mutants etc.
+	Note that we hardcode the name of the dataset file for convenience.
 
 	Returns:
 		raw_df, kin_df where raw is all the data and kin_df is the filtered data.
@@ -30,12 +31,15 @@ def load_rubisco_data():
 
 
 def filter_data(raw_kin_df):
-	"""There are intentionally some duplicates in the raw data 
-	because it includes Savir data directly copied from some primary references.
+	"""There are intentionally some duplicates in the raw data because it
+	includes Savir data directly copied from some primary references.
 
-	This filters it all out. 
+	Args:
+		raw_kin_df: the full dataset. 
+
+	Returns:
+		deduped, savir, nonsavir
 	"""
-	# Want to split data in various ways
 	savir_pmid = '20142476'
 	savir_df = raw_kin_df[raw_kin_df.pmid_or_doi == savir_pmid]
 	nonsavir_df = raw_kin_df[raw_kin_df.pmid_or_doi != savir_pmid]

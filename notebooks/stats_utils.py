@@ -1,10 +1,43 @@
 #!/usr/bin/python
 
+"""Functions for statistical inference of Rubisco parameter ranges.
+
+The functions herein are mostly used for preprocessing the dataset 
+in the "Normalize and Merge Raw Data" notebook. Since the specificity
+S_C/O is related to the other 4 parameters, we can infer any one 
+of the 5 commonly measured Rubisco kinetic parameters (kcat,C, KC,
+kcat,O, KO, S_C/O) parameters from the other four. However, when we 
+make these inferences we also want to report confidence intervals 
+on the inference. We do this here with bootstrapping - sampling from
+the distributions determined by the measurements and reported standard
+deviations (assuming everything is normally distributed).
+
+Note that for legacy reasons this code and the files produced use
+the nomenclature of Savir et al. 2010 while the paper uses more
+standard biochemical nomenclature. For this reason you see vC and
+vO for kcat,C and kcat,O here. You will also see S = S_C/O since
+it can be used as a variable name in python.
+"""
+
+__author__ = 'Avi Flamholz'
+
+
 import numpy as np
 
 
 def combine_dists(means, stds, n=1000):
 	"""Assumes normal distributions. Combines by equal-weighted bootstrapping.
+
+	Basic idea is that I have means and standard deviations of several 
+	different measurements of the same quantity. I want to produce a 
+	single mean and standard deviation for that quantity. So I assume 
+	each of the distributions is normal with the given mean and standard
+	deviation and I draw n (say 1000) samples from each. I then take the 
+	union of the samples and report the mean and standard deviation of
+	the union.
+
+	This is used to merge multiple measurements of, say, S_C/O from the 
+	same reference.
 
 	Args:
 		means: an iterable of means.
@@ -23,6 +56,11 @@ def combine_dists(means, stds, n=1000):
 
 
 class RubiscoKinetics(object):
+	"""Object that encapsulates kinetic data about single Rubisco.
+	
+	Encapsulates the work of calculating 95% CIs of derived parameters.
+	
+	"""
 
 	def __init__(self, vC, vC_SD, KC, KC_SD, KO, KO_SD, S, S_SD, 
 				 vO=None, vO_95CI=None):
