@@ -59,7 +59,8 @@ class RubiscoKinetics(object):
 	"""Object that encapsulates kinetic data about single Rubisco.
 	
 	Encapsulates the work of calculating 95% CIs of derived parameters.
-	
+	It is generally the case that kcat,O (vO) is not measured directly
+	therefore presumptively infer vO from the other parameters here.
 	"""
 
 	def __init__(self, vC, vC_SD, KC, KC_SD, KO, KO_SD, S, S_SD, 
