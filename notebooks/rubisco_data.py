@@ -44,6 +44,9 @@ def filter_data(raw_kin_df):
 	savir_df = raw_kin_df[raw_kin_df.pmid_or_doi == savir_pmid]
 	nonsavir_df = raw_kin_df[raw_kin_df.pmid_or_doi != savir_pmid]
 
-	dup_cols = ['KC', 'KC_SD', 'vC', 'vC_SD', 'S', 'S_SD', 'KO', 'KO_SD']
-	deduped = raw_kin_df.drop_duplicates(subset=dup_cols)
+	measured_vars = 'KC, vC, S, KO'.split(', ')
+	dup_rows = raw_kin_df.duplicated(subset=measured_vars, keep=False)
+	dup_df = raw_kin_df[dup_rows]
+	savir_dups = dup_df[dup_df.pmid_or_doi == savir_pmid]
+	deduped = raw_kin_df.drop(savir_dups.index, axis=0)
 	return deduped, savir_df, nonsavir_df

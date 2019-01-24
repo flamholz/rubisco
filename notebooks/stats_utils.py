@@ -83,31 +83,52 @@ class RubiscoKinetics(object):
 		self.kon_O = None
 		self.kon_O_95CI = None
 
+	def has_carb(self):
+		has_expr = [np.isfinite(self.vC),
+					np.isfinite(self.vC_SD), 
+					np.isfinite(self.KC),
+					np.isfinite(self.KC_SD)]
+		return np.all(has_expr)
+
+	def has_all(self):
+		has_expr = [np.isfinite(self.vC),
+					np.isfinite(self.vC_SD), 
+					np.isfinite(self.KC),
+					np.isfinite(self.KC_SD),
+					np.isfinite(self.KO),
+					np.isfinite(self.KO_SD),
+					np.isfinite(self.S),
+					np.isfinite(self.S_SD)]
+		return np.all(has_expr)
+
 	def infer(self, n=1000):
-		vC = np.random.normal(self.vC, self.vC_SD, n)
-		KC = np.random.normal(self.KC, self.KC_SD, n)
-		KO = np.random.normal(self.KO, self.KO_SD, n)
-		S = np.random.normal(self.S, self.S_SD, n)
-
-		# Since S = vC KO / (vO KC) then
-		# vO = KO vC / (S KC)
 		conf_range = [2.5, 97.5]
 
-		vO_vals = KO * vC / (S * KC)
-		self.vO = np.median(vO_vals)
-		self.vO_95CI = np.percentile(vO_vals, conf_range)
+		if self.has_carb():
+			vC = np.random.normal(self.vC, self.vC_SD, n)
+			KC = np.random.normal(self.KC, self.KC_SD, n)
 
-		kon_C_vals = vC / KC
+			kon_C_vals = vC / KC
+			self.kon_C = np.median(kon_C_vals)
+			self.kon_C_95CI = np.percentile(kon_C_vals, conf_range)
 
-		# Since konO = vO/KO and vO = KO vC / (S KC) then
-		# konO = vC / (S KC)
-		kon_O_vals = vC / (S * KC)
-		conf_range = [2.5, 97.5]
+		if self.has_all():
+			KO = np.random.normal(self.KO, self.KO_SD, n)
+			S = np.random.normal(self.S, self.S_SD, n)
 
-		self.kon_C = np.median(kon_C_vals)
-		self.kon_C_95CI = np.percentile(kon_C_vals, conf_range)
-		self.kon_O = np.median(kon_O_vals)
-		self.kon_O_95CI = np.percentile(kon_O_vals, conf_range)
+			# Since S = vC KO / (vO KC) then
+			# vO = KO vC / (S KC)
+			vO_vals = KO * vC / (S * KC)
+			self.vO = np.median(vO_vals)
+			self.vO_95CI = np.percentile(vO_vals, conf_range)
+
+			# Since konO = vO/KO and vO = KO vC / (S KC) then
+			# konO = vC / (S KC)
+			kon_O_vals = vC / (S * KC)
+			conf_range = [2.5, 97.5]
+
+			self.kon_O = np.median(kon_O_vals)
+			self.kon_O_95CI = np.percentile(kon_O_vals, conf_range)
 
 	@staticmethod
 	def from_kv(kv):
