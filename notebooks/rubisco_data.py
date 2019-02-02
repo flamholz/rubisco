@@ -50,3 +50,16 @@ def filter_data(raw_kin_df):
 	savir_dups = dup_df[dup_df.pmid_or_doi == savir_pmid]
 	deduped = raw_kin_df.drop(savir_dups.index, axis=0)
 	return deduped, savir_df, nonsavir_df
+
+
+def merge_organisms(kin_df):
+	"""Merge organisms by a median filter."""
+	# Grouping by species and mutant just in case some of the mutations are not 
+	# listed in the species name (they should all be, but mistakes happen). 
+
+	kin_cols = 'KC, vC, S, KO, KRuBP, vO, kon_C, kon_O'.split(', ')
+	metadata_cols = ['species', 'mutant', 'isoform', 'taxonomy']
+	cols2keep = kin_cols + metadata_cols
+	subsset_cols_df = kin_df[cols2keep]
+	# Note: median error may not correspond to median value, so we gotta ditch the error values. 
+	return subsset_cols_df.groupby(['species', 'mutant', 'isoform', 'taxonomy']).median().reset_index()
