@@ -47,6 +47,16 @@ def _slope_one(p, x):
     return x + p[0]
 
 
+def sigma_star(vals):
+    """Convenience function to calulate the log-scale standard deviation.
+
+    sigma* = exp(stddev(ln(x))) = 10^(stddev(log10(x)))
+
+    Does not matter what base logarithm is used so long as it matches the base used for exponentiation.
+    """
+    return np.exp(np.nanstd(np.log(vals)))
+
+
 def log_spearmanr(log_xs, log_ys):
     """Convenience function to calculate spearman rank correlation.
 
