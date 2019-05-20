@@ -58,7 +58,7 @@ def merge_organisms(kin_df):
 	# listed in the species name (they should all be, but mistakes happen). 
 
 	kin_cols = 'KC, vC, S, KO, KRuBP, vO, kon_C, kon_O'.split(', ')
-	metadata_cols = ['species', 'mutant', 'isoform', 'taxonomy']
+	metadata_cols = ['species', 'mutant', 'isoform', 'taxonomy', 'short_ref']
 	cols2keep = kin_cols + metadata_cols
 	subsset_cols_df = kin_df[cols2keep]
 	# Note: median error may not correspond to median value, so we gotta ditch the error values. 
