@@ -139,8 +139,8 @@ def fit_power_law_odr(log_xs, log_ys, unit_exp=False):
     else:
         slope, intercept = out.beta
 
-    pred_ys = slope*xs_ + intercept
-    r, P = pearsonr(ys_, pred_ys) 
+    # report pearson R for x vs y
+    r, P = pearsonr(xs_, ys_) 
 
     prefactor = np.exp(intercept)
     exponent = slope
@@ -186,38 +186,10 @@ def bootstrap_power_law_odr(xs, ys, fraction=0.9, rounds=1000):
     return np.array(exponents), np.array(prefactors), np.array(rs)
 
 
-def plot_bootstrapped_ci(xs, exponents, prefactors, ci=0.95, figure=None, color=None, plot_range=True, lw=3):
-    """TODO: remove from code - not in use."""
-    # Calculate a CI on the fit from the distribution of bootstrapped values.
-    ci_end = (1.0 - ci)/2.0
-    conf_range = [100-100*ci_end, 100*ci_end]
-    pre_interval = np.percentile(prefactors, conf_range)
-    exp_interval = np.percentile(exponents, conf_range)
-    
-    xs_double = np.vstack([xs, xs]).T
-    ci_ys = np.power(xs_double, exp_interval)*pre_interval
-    ci_ys2 = np.power(xs_double, exp_interval[::-1])*pre_interval
-    ci_ys = np.hstack([ci_ys, ci_ys2])
-    min_ys, max_ys = ci_ys.min(axis=1), ci_ys.max(axis=1)
-    
-    median_pre, median_exp = np.median(prefactors), np.median(exponents)
-    median_ys = np.power(xs, median_exp)*median_pre
-    
-    # plot median
-    figure = figure or plt.figure(figsize=(10,10))
-    plt.plot(xs, median_ys, ls='--', lw=lw, figure=figure, color=color)
-    
-    # plot range
-    if plot_range:
-        plt.fill_between(xs, min_ys, max_ys, figure=figure, alpha=0.2, color=color)
-
-
 def plot_bootstrapped_range(exponents, prefactors, figure=None):
     """Plots distributions of exponents and prefactors and the middle 95% range."""
     pre_interval = np.percentile(prefactors, [2.5, 97.5])
     exp_interval = np.percentile(exponents, [2.5, 97.5])
-    print(pre_interval)
-    print(exp_interval)
 
     mean_exp = np.mean(exponents)
     median_exp = np.median(exponents)
